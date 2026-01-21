@@ -19,7 +19,6 @@ public sealed class ScreenToGrid : MonoBehaviour
     private void Awake() // 미할당시 자동 할당용
     {
         if (rootCanvas == null) rootCanvas = GetComponentInParent<Canvas>();
-        if (rootCanvas == null) rootCanvas = FindObjectOfType<Canvas>();
 
         if (boardRect == null && rootCanvas != null)
         {

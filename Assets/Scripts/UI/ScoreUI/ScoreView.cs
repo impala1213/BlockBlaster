@@ -8,7 +8,6 @@ public sealed class ScoreView : MonoBehaviour
 
     private void Awake()
     {
-        if (game == null) game = FindObjectOfType<GameController>();
         if (text == null) text = GetComponentInChildren<TMP_Text>(true);
     }
 

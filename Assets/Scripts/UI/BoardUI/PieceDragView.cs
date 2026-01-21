@@ -88,9 +88,6 @@ public sealed class PieceDragView : MonoBehaviour, IBeginDragHandler, IDragHandl
 
         if (dragLayer == null && rootCanvas != null)
             dragLayer = rootCanvas.transform as RectTransform;
-
-        if (game == null) game = FindObjectOfType<GameController>();
-        if (screenToGrid == null) screenToGrid = FindObjectOfType<ScreenToGrid>();
     }
 
     private void SubscribeGridEvents() // 셀 크기 변화시 대응용
