@@ -1,11 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-/// <summary>
-/// Fundamental fix for pooling:
-/// - Always write sprite/material/color deterministically.
-/// - If piece has null sprite/material, reset to the prefab defaults instead of leaving stale values.
-/// </summary>
 public sealed class TileView : MonoBehaviour
 {
     private RectTransform rect;
@@ -22,7 +17,6 @@ public sealed class TileView : MonoBehaviour
         if (image != null)
         {
             image.raycastTarget = false;
-
             defaultSprite = image.sprite;
             defaultMaterial = image.material;
             defaultColor = image.color;
@@ -41,8 +35,9 @@ public sealed class TileView : MonoBehaviour
     {
         if (image == null) return;
 
+        // 풀링 안전하게 "항상 덮어쓰기"
         image.sprite = (piece != null && piece.tileSprite != null) ? piece.tileSprite : defaultSprite;
-        image.material = (piece != null && piece.tileMaterial != null) ? piece.tileMaterial : defaultMaterial;
         image.color = (piece != null) ? piece.tileColor : defaultColor;
+        image.material = (piece != null && piece.tileMaterial != null) ? piece.tileMaterial : defaultMaterial;
     }
 }
