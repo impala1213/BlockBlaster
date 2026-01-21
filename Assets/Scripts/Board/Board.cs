@@ -12,7 +12,7 @@ public sealed class Board
         ClearAll();
     }
 
-    public bool IsInBounds(Vector2Int p) // 8by8 안에 있는지 체크
+    public bool IsInBounds(Vector2Int p) // 8x8 안에 있는지 체크
     {
         return p.x >= 0 && p.x < GridWidth && p.y >= 0 && p.y < GridHeight;
     }

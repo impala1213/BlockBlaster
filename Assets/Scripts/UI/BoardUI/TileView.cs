@@ -23,7 +23,7 @@ public sealed class TileView : MonoBehaviour
         }
     }
 
-    public void ApplyLayout(Vector2 anchoredPos, Vector2 size)
+    public void ApplyLayout(Vector2 anchoredPos, Vector2 size) // 타일이 시각적으로 중앙에 보이게 타일 고정용
     {
         rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
         rect.pivot = new Vector2(0.5f, 0.5f);
@@ -31,11 +31,11 @@ public sealed class TileView : MonoBehaviour
         rect.sizeDelta = size;
     }
 
-    public void ApplyVisual(PieceDefinition piece)
+    public void ApplyVisual(PieceDefinition piece) 
     {
         if (image == null) return;
 
-        // 풀링 안전하게 "항상 덮어쓰기"
+        // 기존 타일 모양 덮어쓰게 잘 안풀려서 
         image.sprite = (piece != null && piece.tileSprite != null) ? piece.tileSprite : defaultSprite;
         image.color = (piece != null) ? piece.tileColor : defaultColor;
         image.material = (piece != null && piece.tileMaterial != null) ? piece.tileMaterial : defaultMaterial;

@@ -1,5 +1,4 @@
-ï»¿using System;
-using System.Reflection;
+using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -10,14 +9,14 @@ public sealed class PieceDragView : MonoBehaviour, IBeginDragHandler, IDragHandl
     [SerializeField] private GameController game;
     [SerializeField] private ScreenToGrid screenToGrid;
     [SerializeField] private Canvas rootCanvas;
-    [SerializeField] private RectTransform dragLayer; // Full-stretch DragLayer
+    [SerializeField] private RectTransform dragLayer; 
     [SerializeField] private CanvasGroup canvasGroup;
 
     [Header("Piece")]
     [SerializeField] private PieceDefinition piece;
 
     [Header("Visual (optional)")]
-    [SerializeField] private Image blockPrefab; // Optional. If null, runtime Image blocks are created.
+    [SerializeField] private Image blockPrefab;
 
     [Header("Tint Factors")]
     [SerializeField] private Color validFactor = new Color(0.6f, 1f, 0.6f, 1f);
@@ -37,41 +36,23 @@ public sealed class PieceDragView : MonoBehaviour, IBeginDragHandler, IDragHandl
 
     public bool IsDragging => isDragging;
 
-    // Core
     private RectTransform rect;
     private Camera uiCamera;
 
-    // Drag state
     private bool isDragging;
     private Vector2 grabOffset;
     private Transform preDragParent;
-    private bool reparentedToDragLayer;
 
-    // Visual blocks
-    private Image[] blocks;
-    private Color[] baseColors;
-    private Vector2 lastCellSize;
-
-    // Home mode A (legacy): anchored pos + slot size in dragLayer space
-    private bool hasLegacyHome;
-    private Vector2 legacyHomeAnchoredPos;
-    private Vector2 legacyHomeSlotSize;
-    private float legacyHandScale = 1f;
-
-    // Home mode B (recommended): the piece lives under a slot RectTransform while idle
-    private bool hasHomeSlot;
     private RectTransform homeSlot;
     private Vector2 lastHomeSlotSize;
 
-    // Preview
+    private Image[] blocks;
+    private Color baseColor = Color.white;
+    private Vector2 lastBoardCellSize;
+
     private RectTransform previewLayer;
     private Image[] previewBlocks;
 
-    // Cached board rect (private field in ScreenToGrid)
-    private RectTransform cachedBoardRect;
-    private FieldInfo boardRectField;
-
-    // Runtime fallback sprite (when no sprite/prefab is provided)
     private static Sprite s_FallbackSprite;
 
     private void Awake()
@@ -81,34 +62,24 @@ public sealed class PieceDragView : MonoBehaviour, IBeginDragHandler, IDragHandl
         AutoFillRefsIfMissing();
         EnsureRaycastTargetOnRoot();
 
-        if (screenToGrid != null)
-            screenToGrid.OnRecalculated += HandleGridRecalculated;
+        SubscribeGridEvents();
 
-        Canvas.ForceUpdateCanvases();
-        if (screenToGrid != null) screenToGrid.Recalculate();
-
-        // If this object is already parented under a Slot*, treat it as home slot mode automatically.
         TryAutoDetectHomeSlot();
 
-        BuildVisual();
-        ApplyTintFactor(Color.white);
-
-        if (hasHomeSlot)
-            ApplyHandLayoutInSlot(force: true);
-        else if (hasLegacyHome)
+        if (piece != null)
         {
-            RecomputeLegacyHandScale();
-            SnapToLegacyHomePose();
+            BuildOrRefreshVisual();
+            ApplyTintFactor(Color.white);
+            ApplyHandLayoutInSlot(force: true);
         }
     }
 
     private void OnDestroy()
     {
-        if (screenToGrid != null)
-            screenToGrid.OnRecalculated -= HandleGridRecalculated;
+        UnsubscribeGridEvents();
     }
 
-    private void AutoFillRefsIfMissing()
+    private void AutoFillRefsIfMissing() // ÀÎ½ºÆåÅÍ ¹ÌÇÒ´ç½Ã ÀÚµ¿À¸·Î º¸Ãæ
     {
         if (rootCanvas == null) rootCanvas = GetComponentInParent<Canvas>();
         uiCamera = (rootCanvas != null && rootCanvas.renderMode != RenderMode.ScreenSpaceOverlay) ? rootCanvas.worldCamera : null;
@@ -122,17 +93,31 @@ public sealed class PieceDragView : MonoBehaviour, IBeginDragHandler, IDragHandl
         if (screenToGrid == null) screenToGrid = FindObjectOfType<ScreenToGrid>();
     }
 
-    private void EnsureRaycastTargetOnRoot()
+    private void SubscribeGridEvents() // ¼¿ Å©±â º¯È­½Ã ´ëÀÀ¿ë
     {
-        // Drag events start from a raycast-hit UI Graphic.
-        // If blocks have raycastTarget = false (recommended), the root must catch raycasts.
+        if (screenToGrid == null) return;
+
+        screenToGrid.OnRecalculated -= HandleGridRecalculated;
+        screenToGrid.OnRecalculated += HandleGridRecalculated;
+
+        Canvas.ForceUpdateCanvases();
+        screenToGrid.Recalculate();
+    }
+
+    private void UnsubscribeGridEvents()
+    {
+        if (screenToGrid == null) return;
+        screenToGrid.OnRecalculated -= HandleGridRecalculated;
+    }
+
+    private void EnsureRaycastTargetOnRoot() // µå·¡±× ½ÃÀÛ Á¶°Ç º¸Àå¿ë
+    {
         var img = GetComponent<Image>();
         if (img == null) img = gameObject.AddComponent<Image>();
 
-        img.color = new Color(1f, 1f, 1f, 0f); // fully transparent
+        img.color = new Color(1f, 1f, 1f, 0f);
         img.raycastTarget = true;
 
-        // Prevent LayoutGroup from moving/resizing this piece unexpectedly.
         var le = GetComponent<LayoutElement>();
         if (le == null) le = gameObject.AddComponent<LayoutElement>();
         le.ignoreLayout = true;
@@ -141,48 +126,44 @@ public sealed class PieceDragView : MonoBehaviour, IBeginDragHandler, IDragHandl
         rect.pivot = new Vector2(0.5f, 0.5f);
     }
 
-    private void TryAutoDetectHomeSlot()
+    private void TryAutoDetectHomeSlot() // ¼ÕÆÐ Slot Å½Áö¿ë 
     {
-        if (hasHomeSlot) return;
+        if (homeSlot != null) return;
         if (dragLayer != null && transform.parent == dragLayer) return;
 
         var parentRt = transform.parent as RectTransform;
         if (parentRt == null) return;
 
-        // Heuristic: Slot1 / Slot2 / Slot3...
         if (parentRt.name.StartsWith("Slot", StringComparison.OrdinalIgnoreCase))
-        {
             SetHomeSlot(parentRt);
-        }
     }
 
-    // -------------------------
-    // Public API (keep compatible)
-    // -------------------------
 
-    // Legacy: home anchored pos + home slot size (in dragLayer local space)
-    public void SetHome(Vector2 anchoredPos, Vector2 slotSizeInDragLayer)
+    // ´Ù¸¥ ÆÄÀÏ ÂüÁ¶¿ë 
+    public void Initialize(GameController gameRef, ScreenToGrid gridRef, Canvas canvasRef, RectTransform dragLayerRef, RectTransform homeSlotRef)
     {
-        hasLegacyHome = true;
-        legacyHomeAnchoredPos = anchoredPos;
-        legacyHomeSlotSize = slotSizeInDragLayer;
+        if (gameRef != null) game = gameRef;
+        if (gridRef != null) screenToGrid = gridRef;
+        if (canvasRef != null) rootCanvas = canvasRef;
+        if (dragLayerRef != null) dragLayer = dragLayerRef;
 
-        // If the object is under a Slot parent, prefer slot mode.
-        TryAutoDetectHomeSlot();
+        if (rect == null) rect = (RectTransform)transform;
+        if (canvasGroup == null) canvasGroup = GetComponent<CanvasGroup>();
 
-        RecomputeLegacyHandScale();
-        SnapToLegacyHomePose();
+        uiCamera = (rootCanvas != null && rootCanvas.renderMode != RenderMode.ScreenSpaceOverlay) ? rootCanvas.worldCamera : null;
+
+        EnsureRaycastTargetOnRoot();
+        SubscribeGridEvents();
+
+        if (homeSlotRef != null)
+            SetHomeSlot(homeSlotRef);
     }
 
-    // Recommended: the piece lives under slot while idle; drag reparents to dragLayer
     public void SetHomeSlot(RectTransform slot)
     {
         homeSlot = slot;
-        hasHomeSlot = homeSlot != null;
+        if (homeSlot == null) return;
 
-        if (!hasHomeSlot) return;
-
-        // While idle, live under the slot so layout changes never break the hand.
         rect.SetParent(homeSlot, false);
         rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
         rect.pivot = new Vector2(0.5f, 0.5f);
@@ -195,71 +176,52 @@ public sealed class PieceDragView : MonoBehaviour, IBeginDragHandler, IDragHandl
     {
         piece = newPiece;
 
-        BuildVisual();
+        ClearPreview(hardDestroy: false);
+
+        BuildOrRefreshVisual();
         ApplyTintFactor(Color.white);
 
-        ClearPreview();
-
-        if (hasHomeSlot)
-            ApplyHandLayoutInSlot(force: true);
-        else if (hasLegacyHome)
-        {
-            RecomputeLegacyHandScale();
-            SnapToLegacyHomePose();
-        }
+        ApplyHandLayoutInSlot(force: true);
     }
 
-    // -------------------------
-    // Drag handlers
-    // -------------------------
-
-    public void OnBeginDrag(PointerEventData eventData)
+    public void OnBeginDrag(PointerEventData eventData) // µå·¡±× ½ÃÀÛ ÀÌº¥Æ® 
     {
-        if (piece == null || !piece.IsValid() || blocks == null || screenToGrid == null || game == null || dragLayer == null)
+        if (!IsReadyForDrag())
             return;
 
         isDragging = true;
-        ClearPreview();
+        ClearPreview(hardDestroy: false);
 
         if (canvasGroup != null) canvasGroup.blocksRaycasts = false;
 
         preDragParent = transform.parent;
-        reparentedToDragLayer = false;
 
-        // If we were under a slot, move to dragLayer for free dragging over the board.
-        if (hasHomeSlot && transform.parent != dragLayer)
-        {
+        // µå·¡±× ³¡³ª°í ¹èÄ¡ ¾ÈÇÒ½Ã ¿ø·¡ À§Ä¡·Î º¹±Í
+        if (dragLayer != null && transform.parent != dragLayer)
             rect.SetParent(dragLayer, true);
-            reparentedToDragLayer = true;
-        }
 
         transform.SetAsLastSibling();
 
-        ApplyBoardLayout();
+        ApplyBoardLayout(force: true);
 
-        // Compute grab offset in dragLayer local space
+        // ÀâÀº À§Ä¡°¡ À¯ÁöµÇ°Ô
         RectTransformUtility.ScreenPointToLocalPointInRectangle(dragLayer, eventData.position, uiCamera, out var pointerLocal);
         grabOffset = rect.anchoredPosition - pointerLocal;
     }
 
-    public void OnDrag(PointerEventData eventData)
+    public void OnDrag(PointerEventData eventData) // µå·¡±×Áß ÀÌµ¿, ¹Ì¸®º¸±â, ¹èÄ¡ °¡´ÉÇÑÁö »ö»ó Ç¥½Ã
     {
-        if (!isDragging || piece == null || !piece.IsValid() || blocks == null || screenToGrid == null || game == null || dragLayer == null)
+        if (!isDragging || !IsReadyForDrag())
             return;
 
         RectTransformUtility.ScreenPointToLocalPointInRectangle(dragLayer, eventData.position, uiCamera, out var pointerLocal);
 
-        if (screenToGrid.TryGetGridPos(eventData.position, out var hover))
+        if (screenToGrid.TryGetGridPos(eventData.position, out var hover)) // º¸µå À§ÀÏ½Ã ¼¿ ±â¹ÝÀ¸·Î ÀÌµ¿ ¾Æ´Ï¸é ÀÚÀ¯·Ó°Ô ÀÌµ¿
         {
-            // Snap the dragAnchor cell center to the hovered cell center (feels "chunky" / grid-locked).
-            if (snapOnBoard && TryGetDragLocalForCellCenter(hover, out var snapLocal))
-            {
+            if (snapOnBoard && screenToGrid.GridCenterToDragLayerLocal(hover, dragLayer, out var snapLocal))
                 rect.anchoredPosition = snapLocal;
-            }
             else
-            {
                 rect.anchoredPosition = pointerLocal + grabOffset;
-            }
 
             Vector2Int origin = hover - piece.dragAnchor;
             bool canPlace = game.CanPlace(piece, origin);
@@ -269,18 +231,17 @@ public sealed class PieceDragView : MonoBehaviour, IBeginDragHandler, IDragHandl
             if (showPreview)
                 UpdatePreview(origin, canPlace);
             else
-                ClearPreview();
+                ClearPreview(hardDestroy: false);
         }
         else
         {
-            // Outside the board: free movement, no preview
             rect.anchoredPosition = pointerLocal + grabOffset;
             ApplyTintFactor(Color.white);
-            ClearPreview();
+            ClearPreview(hardDestroy: false);
         }
     }
 
-    public void OnEndDrag(PointerEventData eventData)
+    public void OnEndDrag(PointerEventData eventData) // µå·¡±× Á¾·á½Ã Ã³¸® ¹èÄ¡ or ½½·ÔÀ¸·Î º¹±Í
     {
         if (canvasGroup != null) canvasGroup.blocksRaycasts = true;
 
@@ -289,122 +250,134 @@ public sealed class PieceDragView : MonoBehaviour, IBeginDragHandler, IDragHandl
 
         bool placed = false;
 
-        if (piece != null && piece.IsValid() && blocks != null && screenToGrid != null && game != null)
+        if (IsReadyForDrag() && screenToGrid.TryGetGridPos(eventData.position, out var hover))
         {
-            if (screenToGrid.TryGetGridPos(eventData.position, out var hover))
-            {
-                Vector2Int origin = hover - piece.dragAnchor;
-                var turn = game.TryPlace(piece, origin);
-                placed = turn.success;
-            }
+            Vector2Int origin = hover - piece.dragAnchor;
+            placed = game.TryPlace(piece, origin).success;
         }
 
         isDragging = false;
         ApplyTintFactor(Color.white);
-        ClearPreview();
+        ClearPreview(hardDestroy: false);
 
         // Return home
-        if (hasHomeSlot)
+        if (homeSlot != null)
         {
-            if (homeSlot != null)
-            {
-                rect.SetParent(homeSlot, false);
-                rect.localScale = Vector3.one;
-                ApplyHandLayoutInSlot(force: true);
-            }
+            rect.SetParent(homeSlot, false);
+            rect.localScale = Vector3.one;
+            ApplyHandLayoutInSlot(force: true);
         }
-        else if (hasLegacyHome)
+        else if (preDragParent != null)
         {
-            RecomputeLegacyHandScale();
-            SnapToLegacyHomePose();
-        }
-        else
-        {
-            // If no home set, restore parent if we reparented
-            if (reparentedToDragLayer && preDragParent != null)
-                rect.SetParent(preDragParent, true);
+            rect.SetParent(preDragParent, true);
         }
 
         if (placed)
             OnPlaced?.Invoke(this);
     }
 
-    // -------------------------
-    // Recalc hooks
-    // -------------------------
+    private bool IsReadyForDrag() // µå·¡±× °¡´ÉÇÑÁö Ã¼Å© Á¶°Çµé.
+    {
+        return piece != null &&
+               piece.IsValid() &&
+               blocks != null &&
+               blocks.Length == piece.blocks.Length &&
+               screenToGrid != null &&
+               game != null &&
+               dragLayer != null &&
+               screenToGrid.CellSize.x > 0f &&
+               screenToGrid.CellSize.y > 0f;
+    }
 
-    private void HandleGridRecalculated()
+    private void HandleGridRecalculated() // cellsize °è»ê
     {
         if (screenToGrid == null) return;
 
-        if (screenToGrid.CellSize != lastCellSize)
+        if (screenToGrid.CellSize != lastBoardCellSize)
         {
-            ApplyBoardLayout();
+            ApplyBoardLayout(force: true);
 
-            if (hasHomeSlot)
+            if (!isDragging)
                 ApplyHandLayoutInSlot(force: true);
-            else if (hasLegacyHome)
-            {
-                RecomputeLegacyHandScale();
-                SnapToLegacyHomePose();
-            }
         }
     }
 
-    // -------------------------
-    // Visual build/layout
-    // -------------------------
-
-    private void BuildVisual()
+    private void BuildOrRefreshVisual()
     {
-        // Destroy old blocks
-        if (blocks != null)
+        if (piece == null || !piece.IsValid() || screenToGrid == null)
         {
-            for (int i = 0; i < blocks.Length; i++)
-            {
-                if (blocks[i] != null)
-                    Destroy(blocks[i].gameObject);
-            }
+            EnsureBlockCount(0);
+            rect.sizeDelta = Vector2.zero;
+            return;
         }
 
-        blocks = null;
-        baseColors = null;
+        baseColor = piece.tileColor;
 
-        if (piece == null || !piece.IsValid() || screenToGrid == null)
-            return;
+        EnsureBlockCount(piece.blocks.Length);
 
-        Vector2 cell = screenToGrid.CellSize;
-        lastCellSize = cell;
+        ApplyBoardLayout(force: true);
+    }
 
-        blocks = new Image[piece.blocks.Length];
-        baseColors = new Color[piece.blocks.Length];
-
-        for (int i = 0; i < piece.blocks.Length; i++)
+    private void EnsureBlockCount(int count)
+    {
+        if (count <= 0)
         {
-            Image img = CreateBlockImage();
-            img.transform.SetParent(transform, false);
+            if (blocks != null)
+            {
+                for (int i = 0; i < blocks.Length; i++)
+                {
+                    if (blocks[i] != null)
+                        blocks[i].gameObject.SetActive(false);
+                }
+            }
+            return;
+        }
 
-            // Always disable block raycast: root receives raycasts (stable drag target).
+        if (blocks == null || blocks.Length != count)
+        {
+            var newArr = new Image[count];
+
+            int reuse = (blocks != null) ? Mathf.Min(blocks.Length, count) : 0;
+            for (int i = 0; i < reuse; i++)
+                newArr[i] = blocks[i];
+
+            for (int i = reuse; i < count; i++)
+            {
+                newArr[i] = CreateBlockImage();
+                newArr[i].transform.SetParent(transform, false);
+            }
+
+            if (blocks != null && blocks.Length > count)
+            {
+                for (int i = count; i < blocks.Length; i++)
+                {
+                    if (blocks[i] != null)
+                        Destroy(blocks[i].gameObject);
+                }
+            }
+
+            blocks = newArr;
+        }
+
+        Sprite spr = (piece != null && piece.tileSprite != null) ? piece.tileSprite : GetFallbackSprite();
+
+        for (int i = 0; i < blocks.Length; i++)
+        {
+            var img = blocks[i];
+            if (img == null) continue;
+
+            img.gameObject.name = $"Block_{i}";
+            img.gameObject.SetActive(true);
+
             img.raycastTarget = false;
+            img.sprite = spr;
+            img.color = baseColor;
+            img.material = (piece != null && piece.tileMaterial != null) ? piece.tileMaterial : null;
 
-            // Deterministic visuals
-            img.sprite = (piece.tileSprite != null) ? piece.tileSprite : GetFallbackSprite();
-            img.color = piece.tileColor;
-            img.material = piece.tileMaterial != null ? piece.tileMaterial : null;
-
-            RectTransform r = (RectTransform)img.transform;
+            var r = (RectTransform)img.transform;
             r.anchorMin = r.anchorMax = new Vector2(0.5f, 0.5f);
             r.pivot = new Vector2(0.5f, 0.5f);
-            r.sizeDelta = cell;
-
-            Vector2Int rel = piece.blocks[i] - piece.dragAnchor;
-            r.anchoredPosition = new Vector2(rel.x * cell.x, rel.y * cell.y);
-
-            blocks[i] = img;
-            baseColors[i] = img.color;
         }
-
-        ComputeAndApplyRootSize(cell);
     }
 
     private Image CreateBlockImage()
@@ -416,13 +389,16 @@ public sealed class PieceDragView : MonoBehaviour, IBeginDragHandler, IDragHandl
         return go.GetComponent<Image>();
     }
 
-    private void ApplyBoardLayout()
+    private void ApplyBoardLayout(bool force)
     {
         if (piece == null || !piece.IsValid() || blocks == null || screenToGrid == null)
             return;
 
         Vector2 cell = screenToGrid.CellSize;
-        lastCellSize = cell;
+        if (!force && cell == lastBoardCellSize)
+            return;
+
+        lastBoardCellSize = cell;
 
         LayoutBlocks(cell);
         ComputeAndApplyRootSize(cell);
@@ -432,7 +408,7 @@ public sealed class PieceDragView : MonoBehaviour, IBeginDragHandler, IDragHandl
 
     private void ApplyHandLayoutInSlot(bool force)
     {
-        if (!hasHomeSlot || homeSlot == null || piece == null || !piece.IsValid() || blocks == null)
+        if (homeSlot == null || piece == null || !piece.IsValid() || blocks == null)
             return;
 
         Vector2 slotSize = homeSlot.rect.size;
@@ -453,7 +429,7 @@ public sealed class PieceDragView : MonoBehaviour, IBeginDragHandler, IDragHandl
         LayoutBlocks(cellSize);
         ComputeAndApplyRootSize(cellSize);
 
-        // Center the whole piece inside the slot (dragAnchor may not be geometric center).
+        // Center the whole piece inside the slot.
         Vector2 centerOffset = new Vector2((minX + maxX) * 0.5f * cellSize.x, (minY + maxY) * 0.5f * cellSize.y);
         rect.anchoredPosition = -centerOffset;
         rect.localScale = Vector3.one;
@@ -498,131 +474,26 @@ public sealed class PieceDragView : MonoBehaviour, IBeginDragHandler, IDragHandl
         }
     }
 
-    // -------------------------
-    // Legacy home pose (for old HandController logic)
-    // -------------------------
-
-    private void RecomputeLegacyHandScale()
+    private void ApplyTintFactor(Color factor) // ¹èÄ¡ °¡´É½Ã ÃÊ·Ï ºÒ°¡´É½Ã »¡°­
     {
-        if (!hasLegacyHome || piece == null || !piece.IsValid() || screenToGrid == null)
-        {
-            legacyHandScale = 1f;
-            return;
-        }
+        if (blocks == null) return;
 
-        Vector2 pieceSize = rect.sizeDelta;
-
-        float sx = (pieceSize.x <= 0.01f) ? 1f : (legacyHomeSlotSize.x * handPaddingFactor) / pieceSize.x;
-        float sy = (pieceSize.y <= 0.01f) ? 1f : (legacyHomeSlotSize.y * handPaddingFactor) / pieceSize.y;
-
-        legacyHandScale = Mathf.Clamp01(Mathf.Min(sx, sy));
-        if (legacyHandScale <= 0f) legacyHandScale = 1f;
-    }
-
-    private void SnapToLegacyHomePose()
-    {
-        if (!hasLegacyHome) return;
-        rect.anchoredPosition = legacyHomeAnchoredPos;
-        rect.localScale = Vector3.one * legacyHandScale;
-    }
-
-    // -------------------------
-    // Tint
-    // -------------------------
-
-    private void ApplyTintFactor(Color factor)
-    {
-        if (blocks == null || baseColors == null) return;
+        Color c = new Color(baseColor.r * factor.r, baseColor.g * factor.g, baseColor.b * factor.b, baseColor.a * factor.a);
 
         for (int i = 0; i < blocks.Length; i++)
         {
-            Color b = baseColors[i];
-            blocks[i].color = new Color(b.r * factor.r, b.g * factor.g, b.b * factor.b, b.a * factor.a);
+            if (blocks[i] != null)
+                blocks[i].color = c;
         }
     }
 
-    // -------------------------
-    // Snap helpers
-    // -------------------------
-
-    private bool TryGetDragLocalForCellCenter(Vector2Int cell, out Vector2 dragLocal)
-    {
-        dragLocal = default;
-
-        RectTransform boardRect = ResolveBoardRect();
-        if (boardRect == null || dragLayer == null || screenToGrid == null) return false;
-
-        Vector2 boardLocal = screenToGrid.GridToBoardLocalCenter(cell);
-        Vector3 world = boardRect.TransformPoint(boardLocal);
-        Vector2 screen = RectTransformUtility.WorldToScreenPoint(uiCamera, world);
-
-        return RectTransformUtility.ScreenPointToLocalPointInRectangle(dragLayer, screen, uiCamera, out dragLocal);
-    }
-
-    private RectTransform ResolveBoardRect()
-    {
-        if (cachedBoardRect != null) return cachedBoardRect;
-        if (screenToGrid == null) return null;
-
-        // Try reflection: ScreenToGrid has a private [SerializeField] RectTransform boardRect
-        if (boardRectField == null)
-        {
-            boardRectField = typeof(ScreenToGrid).GetField("boardRect", BindingFlags.Instance | BindingFlags.NonPublic);
-        }
-
-        cachedBoardRect = boardRectField != null ? boardRectField.GetValue(screenToGrid) as RectTransform : null;
-
-        // Fallback: search by name in canvas
-        if (cachedBoardRect == null && rootCanvas != null)
-        {
-            var all = rootCanvas.GetComponentsInChildren<RectTransform>(true);
-            for (int i = 0; i < all.Length; i++)
-            {
-                if (all[i].name == "GridArea")
-                {
-                    cachedBoardRect = all[i];
-                    break;
-                }
-            }
-        }
-
-        return cachedBoardRect;
-    }
-    public void Initialize(GameController gameRef, ScreenToGrid gridRef, Canvas canvasRef, RectTransform dragLayerRef, RectTransform homeSlotRef)
-    {
-        if (gameRef != null) game = gameRef;
-        if (gridRef != null) screenToGrid = gridRef;
-        if (canvasRef != null) rootCanvas = canvasRef;
-        if (dragLayerRef != null) dragLayer = dragLayerRef;
-
-        // ë‚´ë¶€ ì„¸íŒ… ë‹¤ì‹œ ê³„ì‚°
-        if (rect == null) rect = (RectTransform)transform;
-        if (canvasGroup == null) canvasGroup = GetComponent<CanvasGroup>();
-
-        uiCamera = (rootCanvas != null && rootCanvas.renderMode != RenderMode.ScreenSpaceOverlay) ? rootCanvas.worldCamera : null;
-
-        EnsureRaycastTargetOnRoot();
-
-        if (screenToGrid != null)
-        {
-            screenToGrid.OnRecalculated -= HandleGridRecalculated;
-            screenToGrid.OnRecalculated += HandleGridRecalculated;
-            screenToGrid.Recalculate();
-        }
-
-        if (homeSlotRef != null)
-            SetHomeSlot(homeSlotRef);
-    }
-
-    private void ResolvePreviewLayer()
+    private void ResolvePreviewLayer() 
     {
         if (previewLayer != null) return;
 
-        RectTransform boardRect = ResolveBoardRect();
-        if (boardRect != null)
+        if (screenToGrid != null && screenToGrid.BoardRect != null)
         {
-            // Typical hierarchy: GridArea/PreviewLayer
-            var found = boardRect.Find("PreviewLayer") as RectTransform;
+            var found = screenToGrid.BoardRect.Find("PreviewLayer") as RectTransform;
             if (found != null)
             {
                 previewLayer = found;
@@ -630,7 +501,6 @@ public sealed class PieceDragView : MonoBehaviour, IBeginDragHandler, IDragHandl
             }
         }
 
-        // Fallback: search by name
         if (rootCanvas != null)
         {
             var all = rootCanvas.GetComponentsInChildren<RectTransform>(true);
@@ -645,32 +515,36 @@ public sealed class PieceDragView : MonoBehaviour, IBeginDragHandler, IDragHandl
         }
     }
 
-    private void EnsurePreviewBlocks()
+    private void EnsurePreviewBlocks() // block¿¡ ¸ÂÃç ¹Ì¸®º¸±â block »ý¼º
     {
         if (piece == null || !piece.IsValid()) return;
+
         ResolvePreviewLayer();
         if (previewLayer == null) return;
 
         if (previewBlocks != null && previewBlocks.Length == piece.blocks.Length)
             return;
 
-        ClearPreview();
+        if (previewBlocks != null)
+        {
+            for (int i = 0; i < previewBlocks.Length; i++)
+            {
+                if (previewBlocks[i] != null)
+                    Destroy(previewBlocks[i].gameObject);
+            }
+        }
 
         previewBlocks = new Image[piece.blocks.Length];
+
         Sprite spr = (piece.tileSprite != null) ? piece.tileSprite : GetFallbackSprite();
 
         for (int i = 0; i < previewBlocks.Length; i++)
         {
             Image img;
             if (blockPrefab != null)
-            {
                 img = Instantiate(blockPrefab);
-            }
             else
-            {
-                var go = new GameObject($"Preview_{i}", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-                img = go.GetComponent<Image>();
-            }
+                img = new GameObject($"Preview_{i}", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image)).GetComponent<Image>();
 
             img.transform.SetParent(previewLayer, false);
             img.raycastTarget = false;
@@ -678,24 +552,25 @@ public sealed class PieceDragView : MonoBehaviour, IBeginDragHandler, IDragHandl
             img.sprite = spr;
             img.material = piece.tileMaterial != null ? piece.tileMaterial : null;
 
-            RectTransform r = (RectTransform)img.transform;
+            var r = (RectTransform)img.transform;
             r.anchorMin = r.anchorMax = new Vector2(0.5f, 0.5f);
             r.pivot = new Vector2(0.5f, 0.5f);
 
+            img.gameObject.SetActive(false);
             previewBlocks[i] = img;
         }
     }
 
-    private void UpdatePreview(Vector2Int origin, bool canPlace)
+    private void UpdatePreview(Vector2Int origin, bool canPlace) // ÀÌµ¿½Ã¸¶´Ù ¹Ì¸®º¸±â Å¸ÀÏ Ç¥½Ã
     {
         EnsurePreviewBlocks();
-        if (previewBlocks == null || screenToGrid == null) return;
+        if (previewBlocks == null || screenToGrid == null || previewLayer == null) return;
 
         Color factor = canPlace ? validFactor : invalidFactor;
-        Color baseC = piece.tileColor;
-        Color c = new Color(baseC.r * factor.r, baseC.g * factor.g, baseC.b * factor.b, previewAlpha);
+        Color c = new Color(baseColor.r * factor.r, baseColor.g * factor.g, baseColor.b * factor.b, previewAlpha);
 
         Vector2 cellSize = screenToGrid.CellSize;
+        RectTransform boardRect = screenToGrid.BoardRect;
 
         for (int i = 0; i < previewBlocks.Length; i++)
         {
@@ -711,44 +586,37 @@ public sealed class PieceDragView : MonoBehaviour, IBeginDragHandler, IDragHandl
 
             img.color = c;
 
-            // Place in preview layer using board local -> preview local conversion
-            RectTransform boardRect = ResolveBoardRect();
-            if (boardRect != null && previewLayer != null)
-            {
-                Vector2 boardLocal = screenToGrid.GridToBoardLocalCenter(cell);
-                Vector3 world = boardRect.TransformPoint(boardLocal);
-                Vector3 local = previewLayer.InverseTransformPoint(world);
+            Vector2 boardLocal = screenToGrid.GridToBoardLocalCenter(cell);
+            Vector3 world = (boardRect != null) ? boardRect.TransformPoint(boardLocal) : previewLayer.TransformPoint(boardLocal);
+            Vector3 local = previewLayer.InverseTransformPoint(world);
 
-                RectTransform r = (RectTransform)img.transform;
-                r.sizeDelta = cellSize;
-                r.anchoredPosition = (Vector2)local;
-            }
-            else
-            {
-                // Fallback (works if PreviewLayer shares board local origin)
-                RectTransform r = (RectTransform)img.transform;
-                r.sizeDelta = cellSize;
-                r.anchoredPosition = screenToGrid.GridToBoardLocalCenter(cell);
-            }
+            RectTransform r = (RectTransform)img.transform;
+            r.sizeDelta = cellSize;
+            r.anchoredPosition = (Vector2)local;
         }
     }
 
-    private void ClearPreview()
+    private void ClearPreview(bool hardDestroy)
     {
         if (previewBlocks == null) return;
+
+        if (hardDestroy)
+        {
+            for (int i = 0; i < previewBlocks.Length; i++)
+            {
+                if (previewBlocks[i] != null)
+                    Destroy(previewBlocks[i].gameObject);
+            }
+            previewBlocks = null;
+            return;
+        }
 
         for (int i = 0; i < previewBlocks.Length; i++)
         {
             if (previewBlocks[i] != null)
-                Destroy(previewBlocks[i].gameObject);
+                previewBlocks[i].gameObject.SetActive(false);
         }
-
-        previewBlocks = null;
     }
-
-    // -------------------------
-    // Fallback sprite
-    // -------------------------
 
     private static Sprite GetFallbackSprite()
     {

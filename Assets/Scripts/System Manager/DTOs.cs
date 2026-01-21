@@ -1,3 +1,5 @@
+// 블록 배치가 UI와 System 사이를 연결해야해서 연결용 코드 그냥 계층 연결용!
+
 using System.Collections.Generic;
 using UnityEngine;
 

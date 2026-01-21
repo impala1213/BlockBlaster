@@ -5,7 +5,7 @@ public sealed class BoardView : MonoBehaviour
 {
     [SerializeField] private GameController game;
     [SerializeField] private ScreenToGrid screenToGrid;
-    [SerializeField] private RectTransform tileLayer; // MUST be GridArea/TileLayer
+    [SerializeField] private RectTransform tileLayer; 
     [SerializeField] private TileView tilePrefab;
 
     private readonly Dictionary<Vector2Int, TileView> active = new Dictionary<Vector2Int, TileView>();
@@ -13,6 +13,8 @@ public sealed class BoardView : MonoBehaviour
 
     private void OnEnable()
     {
+        if (game == null) return;
+
         game.OnBoardReset += ClearAll;
         game.OnCellsPlaced += HandlePlaced;
         game.OnCellsCleared += HandleCleared;
@@ -20,6 +22,8 @@ public sealed class BoardView : MonoBehaviour
 
     private void OnDisable()
     {
+        if (game == null) return;
+
         game.OnBoardReset -= ClearAll;
         game.OnCellsPlaced -= HandlePlaced;
         game.OnCellsCleared -= HandleCleared;
@@ -27,12 +31,16 @@ public sealed class BoardView : MonoBehaviour
 
     private void HandlePlaced(PieceDefinition piece, List<Vector2Int> cells)
     {
+        if (tileLayer == null || screenToGrid == null || cells == null) return;
+
         Vector2 cellSize = screenToGrid.CellSize;
 
         for (int i = 0; i < cells.Count; i++)
         {
             Vector2Int c = cells[i];
-            if (active.ContainsKey(c)) continue;
+
+            if (active.TryGetValue(c, out _))
+                continue;
 
             TileView t = GetTile();
             t.gameObject.SetActive(true);
@@ -47,11 +55,14 @@ public sealed class BoardView : MonoBehaviour
 
     private void HandleCleared(List<Vector2Int> cells)
     {
+        if (cells == null) return;
+
         for (int i = 0; i < cells.Count; i++)
         {
-            if (active.TryGetValue(cells[i], out var t))
+            Vector2Int c = cells[i];
+            if (active.TryGetValue(c, out var t))
             {
-                active.Remove(cells[i]);
+                active.Remove(c);
                 ReturnTile(t);
             }
         }
@@ -67,14 +78,20 @@ public sealed class BoardView : MonoBehaviour
 
     private TileView GetTile()
     {
+        if (tilePrefab == null) return null;
+
         if (pool.Count > 0) return pool.Pop();
         return Instantiate(tilePrefab);
     }
 
     private void ReturnTile(TileView t)
     {
+        if (t == null) return;
+
         t.gameObject.SetActive(false);
-        t.transform.SetParent(tileLayer, false);
+        if (tileLayer != null)
+            t.transform.SetParent(tileLayer, false);
+
         pool.Push(t);
     }
 }
