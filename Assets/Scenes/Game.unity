@@ -186,8 +186,8 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1880948676}
-  - {fileID: 1011729352}
   - {fileID: 2073871229}
+  - {fileID: 1011729352}
   - {fileID: 2129554751}
   - {fileID: 1952837716}
   m_Father: {fileID: 0}
@@ -890,7 +890,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: -72, y: -72}
+  m_SizeDelta: {x: -32, y: -32}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1919333676
 MonoBehaviour:
@@ -1203,7 +1203,8 @@ MonoBehaviour:
   - {fileID: 1082244708}
   - {fileID: 1971798092}
   - {fileID: 40246559}
-  dragPiecePrefab: {fileID: 7689601658674775917, guid: 526f1f39973f11b4b9d38cf128a252d5, type: 3}
+  game: {fileID: 2053032532}
+  screenToGrid: {fileID: 2053032531}
   piecePool:
   - {fileID: 11400000, guid: 1789077f45759d043a557487e0f88f19, type: 2}
 --- !u!1 &2073871228

@@ -15,6 +15,9 @@ public sealed class ScreenToGrid : MonoBehaviour
     public event Action OnRecalculated;
     public Vector2 CellSize => cellSize;
 
+    // ADD
+    public RectTransform BoardRect => boardRect;
+
     private void Awake()
     {
         uiCamera = (rootCanvas.renderMode == RenderMode.ScreenSpaceOverlay) ? null : rootCanvas.worldCamera;
@@ -78,5 +81,18 @@ public sealed class ScreenToGrid : MonoBehaviour
         float x = (gridPos.x + 0.5f) * cellSize.x;
         float y = (gridPos.y + 0.5f) * cellSize.y;
         return new Vector2(x, y) - boardSize * 0.5f;
+    }
+
+    // ADD: grid cell center -> dragLayer local
+    public bool GridCenterToDragLayerLocal(Vector2Int gridPos, RectTransform dragLayer, out Vector2 dragLocal)
+    {
+        dragLocal = default;
+        if (dragLayer == null || boardRect == null) return false;
+
+        Vector2 boardLocal = GridToBoardLocalCenter(gridPos);
+        Vector3 world = boardRect.TransformPoint(boardLocal);
+        Vector2 screen = RectTransformUtility.WorldToScreenPoint(uiCamera, world);
+
+        return RectTransformUtility.ScreenPointToLocalPointInRectangle(dragLayer, screen, uiCamera, out dragLocal);
     }
 }
