@@ -72,29 +72,28 @@
 7.1 GridArea 
 - GridArea는 보드에서 실제로 블록이 놓이는 기준 좌표계 영역
 - ScreenToGrid.boardRect는 반드시 GridArea를 참조한다
-- TryGetGridPos와 CellSize 계산은 GridArea의 RectTransform 크기와 좌표계를 기준으로 한다
-- GridArea가 올바르면 배치 위치 스냅 위치 프리뷰 위치가 모두 같은 기준으로 맞는다
+- TryGetGridPos와 CellSize 계산은 GridArea의 RectTransform 크기와 좌표계를 기준
+- GridArea가 올바르면 배치 위치 스냅 위치 프리뷰 위치가 모두 같은 기준
 
 7.2 HandArea 
 - HandArea는 손패 슬롯들이 배치되는 UI 영역이다
-- HandController.slots는 HandArea 아래의 Slot 오브젝트들을 참조한다
-- HandArea는 보드 좌표계와 별개이며 드래그 중에는 DragLayer로 이동하므로 HandArea 자체는 드래그 좌표 계산에 관여하지 않는다
-- 슬롯 크기 변화에 따라 PieceDragView.ApplyHandLayoutInSlot이 조각을 슬롯 안에 자동으로 맞춘다
+- HandController.slots는 HandArea 아래의 Slot 오브젝트들을 참조
+- HandArea는 보드 좌표계와 별개이며 드래그 중에는 DragLayer로 이동하므로 HandArea 자체는 드래그 좌표 계산에 관여x
+- 슬롯 크기 변화에 따라 PieceDragView.ApplyHandLayoutInSlot이 조각을 슬롯 안에 자동으로 설정
 
 7.3 TileLayer 
-- TileLayer는 실제 보드에 확정 배치된 타일을 표시하는 레이어다
-- BoardView가 placedCells를 기반으로 TileView를 생성 또는 재사용하여 TileLayer에 배치한다
-- TileLayer는 일반적으로 GridArea 하위에 둔다
+- TileLayer는 실제 보드에 확정 배치된 타일을 표시하는 레이어
+- BoardView가 placedCells를 기반으로 TileView를 생성 또는 재사용하여 TileLayer에 배치
+- TileLayer는 일반적으로 GridArea 하위로
 
 7.4 PreviewLayer 
-- PreviewLayer는 드래그 중 미리보기를 표시하는 레이어다
-- PieceDragView.UpdatePreview가 origin과 piece.blocks를 기준으로 각 셀 위치에 previewBlocks를 배치한다
-- PreviewLayer는 보통 GridArea 하위에 둔다
+- PreviewLayer는 드래그 중 미리보기를 표시하는 레이어
+- PieceDragView.UpdatePreview가 origin과 piece.blocks를 기준으로 각 셀 위치에 previewBlocks를 배치
+- PreviewLayer는 보통 GridArea 하위에
 
 7.5 DragLayer 
-- DragLayer는 드래그 중인 조각을 올려두는 레이어다
-- PieceDragView.OnBeginDrag에서 조각 오브젝트를 DragLayer로 이동시켜 보드 위에서 자유롭게 움직이게 한다
-- dragLayer는 Canvas 전체를 덮는 full stretch RectTransform을 권장한다
+- DragLayer는 드래그 중인 조각을 올려두는 레이어
+- PieceDragView.OnBeginDrag에서 조각 오브젝트를 DragLayer로 이동시켜 보드 위에서 자유롭게 움직이게 구현
 
 
 
