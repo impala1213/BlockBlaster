@@ -23,8 +23,11 @@ namespace LSM {
         private List<I_Observer>[] observers;
         private Dictionary<E_Acheivements_Code, C_Achievements> dict_acheivement;
 
-        private static Action<int, bool> add_ClearBlock;
-        private static Action<int, bool> add_Score;
+        private static Action<int, bool> a_add_ClearBlock;
+        private static Action<int, bool> a_add_Score;
+
+        private static Action<int, I_Observer> a_subscribe;
+        private static Action<int, I_Observer> a_unsubscribe;
 
         #region ---------- Observer. UI와 연결할 것.
 
@@ -56,17 +59,30 @@ namespace LSM {
             achievementData = Resources.LoadAll<SO_Achievements>(ResourcePath).ToList();
             dict_acheivement = new Dictionary<E_Acheivements_Code, C_Achievements>();
 
-            add_ClearBlock += (int _value, bool is_reset) =>
+            a_add_ClearBlock += (int _value, bool is_reset) =>
             {
                 C_Achievements d_class = dict_acheivement[E_Acheivements_Code.ClearBlock];
                 d_class.CurValue = is_reset ? _value:d_class.CurValue + _value;
             };
-            add_Score += (int _value, bool is_reset) =>
+            a_add_Score += (int _value, bool is_reset) =>
             {
                 C_Achievements d_class = dict_acheivement[E_Acheivements_Code.Score];
                 d_class.CurValue = is_reset ? _value : d_class.CurValue + _value;
             };
         }
+
+
+        #region ---------- Event용 메소드
+        public static void Achievement_Event_Subscribe(int _mod, I_Observer _ob)
+        { a_subscribe?.Invoke(_mod, _ob); }
+        public static void Achievement_Event_UnSubscribe(int _mod, I_Observer _ob)
+        { a_unsubscribe?.Invoke(_mod, _ob); }
+        public static void Achievement_Event_AddClearBlock(int _v, bool _isSet)
+        { a_add_ClearBlock(_v, _isSet); }
+        public static void Achievement_Event_AddScore(int _v, bool _isSet)
+        { a_add_Score(_v,_isSet); }
+
+        #endregion
 
 
         /// <summary>
@@ -77,10 +93,10 @@ namespace LSM {
             switch (mod)
             {
                 case E_Acheivements_Code.ClearBlock:
-                    add_ClearBlock(v,is_reset);
+                    a_add_ClearBlock(v,is_reset);
                     break;
                 case E_Acheivements_Code.Score:
-                    add_Score(v,is_reset);
+                    a_add_Score(v,is_reset);
                     break;
             }
         }

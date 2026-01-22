@@ -85,7 +85,7 @@ AudioMixerController:
   - guid: 4fead9abf24c9254caa3492c4299f01f
     name: BGM_V
   - guid: 45bf1ee9a3fca7c4b94cd06fe7acc204
-    name: Master_Volume
+    name: Master_V
   - guid: 99c6c8e93c2d13a40a5d2507a87ee2d5
     name: SFX_V
   m_AudioMixerGroupViews:

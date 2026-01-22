@@ -16,16 +16,29 @@ public static class AudioLinker
     /// </summary>
     /// <param name="_type">LSM.E_SoundType.(Master, BGM, SFX) </param>
     /// <param name="_mute">true = ¹ÂÆ® / false = ¹ÂÆ®ÇØÁ¦</param>
-    public static void Audio_Mute(E_SoundType _type, bool _mute) 
+    public static void Audio_MuteSet(E_SoundType _type, bool _mute) 
     { SoundManager.Audio_Event_Mute(_type, _mute); }
+    /// <summary>
+    /// Master, BGM, SFX ¹Í¼­ÀÇ ¹ÂÆ® Åä±Û.
+    /// </summary>
+    /// <param name="_type">LSM.E_SoundType.(Master, BGM, SFX)</param>
+    public static void Audio_MuteToggle(E_SoundType _type)
+    { SoundManager.Audio_Event_Mute(_type, !Audio_GetMute(_type)); }
 
     /// <summary>
     /// Master, BGM, SFX ¹Í¼­ÀÇ º¼·ý Á¶Á¤.
     /// </summary>
     /// <param name="_type">LSM.E_SoundType.(Master, BGM, SFX)</param>
     /// <param name="_volume">0f~1f °ª</param>
-    public static void Audio_Volume(E_SoundType _type, float _volume)
+    public static void Audio_VolumeSet(E_SoundType _type, float _volume)
     { SoundManager.Audio_Event_Volume(_type, _volume); }
+    /// <summary>
+    /// Master, BGM, SFX ¹Í¼­ÀÇ º¼·ý ´õÇÏ±â.
+    /// </summary>
+    /// <param name="_type">LSM.E_SoundType.(Master, BGM, SFX)</param>
+    /// <param name="_volume">0f~1f °ª</param>
+    public static void Audio_VolumeAlpha(E_SoundType _type, float _volume) 
+    { SoundManager.Audio_Event_Volume(_type, Audio_GetVolume(_type) + _volume); }
 
     /// <summary>
     /// Master, BGM, SFX ¹Í¼­ÀÇ º¼·ý °ª ¹ÝÈ¯.

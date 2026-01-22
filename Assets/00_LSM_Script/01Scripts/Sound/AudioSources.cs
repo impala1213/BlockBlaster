@@ -48,13 +48,13 @@ namespace LSM
         public void Audio_Mute(bool b)
         {
             _IsMute = b;
-            manager.SetMixerVolume(E_SoundType.Master, _IsMute ? -80f : _Volume);
+            manager.SoundCtrl.SetMixerVolume(E_SoundType.Master, _IsMute ? -80f : _Volume);
         }
 
         public void Audio_VolumeSet(float v)
         {
             _Volume = v;
-            manager.SetMixerVolume(E_SoundType.Master, _Volume);
+            manager.SoundCtrl.SetMixerVolume(E_SoundType.Master, _Volume);
         }
 
     }
@@ -84,17 +84,17 @@ namespace LSM
 
         public void Audio_Mute(bool b)
         {
-            _IsMute = b;
             if (_IsMute && !b)  // 뮤트였다가 뮤트가 풀리면 재생.
             { AudioSources[0].Play(); }
-            manager.SetMixerVolume(E_SoundType.BGM, _IsMute ? -80f : _Volume);
+            _IsMute = b;
+            manager.SoundCtrl.SetMixerVolume(E_SoundType.BGM, _IsMute ? -80f : _Volume);
             if (_IsMute)
             { AudioSources[0].Stop(); }
         }
 
         public void Audio_Setting(SO_SoundClip _clip)
         {
-            if (_clip._code.Equals(Cur_SoundClip[0]._code))
+            if (Cur_SoundClip[0]!=null &&_clip._code.Equals(Cur_SoundClip[0]._code))
             { return; }
             Cur_SoundClip[0] = _clip;
             AudioSources[0].clip = Cur_SoundClip[0]._clip;
@@ -104,7 +104,7 @@ namespace LSM
         public void Audio_VolumeSet(float v)
         {
             _Volume = v;
-            manager.SetMixerVolume(E_SoundType.BGM, _Volume);
+            manager.SoundCtrl.SetMixerVolume(E_SoundType.BGM, _Volume);
         }
 
         public void Add_AudioSource(AudioSource _as)
@@ -144,7 +144,7 @@ namespace LSM
         public void Audio_Mute(bool b)
         {
             _IsMute = b;
-            manager.SetMixerVolume(E_SoundType.SFX, _IsMute ? -80f : _Volume);
+            manager.SoundCtrl.SetMixerVolume(E_SoundType.SFX, _IsMute ? -80f : _Volume);
         }
 
         public void Audio_Setting(SO_SoundClip _clip)
@@ -159,7 +159,7 @@ namespace LSM
         public void Audio_VolumeSet(float v)
         {
             _Volume = v;
-            manager.SetMixerVolume(E_SoundType.SFX, _Volume);
+            manager.SoundCtrl.SetMixerVolume(E_SoundType.SFX, _Volume);
         }
 
         public void Add_AudioSource(AudioSource _as)
