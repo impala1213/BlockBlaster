@@ -12,7 +12,7 @@ namespace LSM
     public class SO_Achievements:ScriptableObject
     {
         public string _name;
-        public E_Acheivements_Code _type;
+        public E_Achievements_Code _type;
         public int _invert;
     }
 
@@ -33,10 +33,15 @@ namespace LSM
             {
                 _cur = value;
                 int d_level = Mathf.FloorToInt(_cur / data._invert);
-                if (d_level != _level) { LevelChange(); }
-                _level = d_level;
+                if (d_level != _level) 
+                {
+                    _level = d_level;
+                    LevelChange(); 
+                }
             }
         }
+
+        public int CurLevel => _level;
 
         public C_Achievements(SO_Achievements _data)
         {

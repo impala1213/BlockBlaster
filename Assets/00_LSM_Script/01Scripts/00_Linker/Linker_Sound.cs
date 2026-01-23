@@ -1,15 +1,17 @@
 using UnityEngine;
 using LSM;
 
-public static class AudioLinker
+public static class Linker_Sound
 {
     /// <summary>
     /// BGM 혹은 SFX의 오디오를 지정할때 사용.
     /// </summary>
     /// <param name="_type">LSM.E_SoundType.(BGM, SFX)</param>
     /// <param name="_name">코드.</param>
-    public static void Audio_Set(E_SoundType _type, string _name)
-    { SoundManager.Audio_Event_Set(_type, _name); }
+    public static void Audio_Set(E_SoundType _type, string _code)
+    { SoundManager.Audio_Event_Set(_type, _code); }
+
+
 
     /// <summary>
     /// Master, BGM, SFX 믹서의 뮤트 설정.
@@ -25,6 +27,8 @@ public static class AudioLinker
     public static void Audio_MuteToggle(E_SoundType _type)
     { SoundManager.Audio_Event_Mute(_type, !Audio_GetMute(_type)); }
 
+
+
     /// <summary>
     /// Master, BGM, SFX 믹서의 볼륨 조정.
     /// </summary>
@@ -39,6 +43,8 @@ public static class AudioLinker
     /// <param name="_volume">0f~1f 값</param>
     public static void Audio_VolumeAlpha(E_SoundType _type, float _volume) 
     { SoundManager.Audio_Event_Volume(_type, Audio_GetVolume(_type) + _volume); }
+
+
 
     /// <summary>
     /// Master, BGM, SFX 믹서의 볼륨 값 반환.

@@ -601,6 +601,7 @@ GameObject:
   m_Component:
   - component: {fileID: 677814508}
   - component: {fileID: 677814507}
+  - component: {fileID: 677814509}
   m_Layer: 0
   m_Name: GameObject
   m_TagString: Untagged
@@ -615,7 +616,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 677814506}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 677221780816e454fb8f57ddb30226f7, type: 3}
   m_Name: 
@@ -635,6 +636,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &677814509
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 677814506}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56062a669b99fbe4b92d33d38c747b53, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1317165576
 GameObject:
   m_ObjectHideFlags: 0
@@ -668,7 +681,6 @@ MonoBehaviour:
   default_clip: {fileID: 11400000, guid: be0594f46e51ed646bcb10599f0c5690, type: 2}
   bgm_prefab: {fileID: 3690145586557711924, guid: 41cddd04448bc6f42aa5f248ec19ee16, type: 3}
   sfx_prefab: {fileID: 8737220216106310445, guid: 093bfa10b5cbe9642942a31d48f77341, type: 3}
-  d_clips: []
 --- !u!4 &1317165578
 Transform:
   m_ObjectHideFlags: 0
