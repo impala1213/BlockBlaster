@@ -3,29 +3,43 @@ using UnityEngine;
 
 public sealed class ScoreView : MonoBehaviour
 {
+    [Header("Refs")]
     [SerializeField] private GameController game;
-    [SerializeField] private TMP_Text text;
+
+    [Header("UI Texts")]
+    [Tooltip("현재 점수 표시 텍스트")]
+    [SerializeField] private TMP_Text scoreText;
+
+    [Tooltip("역대 최고 점수(BEST) 표시 텍스트")]
+    [SerializeField] private TMP_Text bestText;
 
     private void Awake()
     {
-        if (text == null) text = GetComponentInChildren<TMP_Text>(true);
+        if (scoreText == null)
+            scoreText = GetComponentInChildren<TMP_Text>(true);
     }
 
     private void OnEnable()
     {
-        if (game != null)
-            game.OnScoreChanged += HandleScore;
+        if (game == null) return;
+
+        game.OnScoreChanged += HandleScoreChanged;
+
+        HandleScoreChanged(game.Score, game.BestScore, game.ComboStreak, 0);
     }
 
     private void OnDisable()
     {
-        if (game != null)
-            game.OnScoreChanged -= HandleScore;
+        if (game == null) return;
+        game.OnScoreChanged -= HandleScoreChanged;
     }
 
-    private void HandleScore(int score, int best, int combo, int delta)
+    private void HandleScoreChanged(int score, int best, int comboIndex, int delta)
     {
-        if (text == null) return;
-        text.text = $"Score: {score}\nBest: {best}\nCombo: {combo}\n(+{delta})";
+        if (bestText != null)
+            bestText.text = $"{best}";
+        if (scoreText != null)
+            scoreText.text = $"{score}";
+        
     }
 }
