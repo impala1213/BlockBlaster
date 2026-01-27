@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e4dd56fb33dba341ad8d8d51c25e408, type: 3}
+  m_Name: 4_Block L
+  m_EditorClassIdentifier: 
+  pieceId: 4_3
+  blocks:
+  - {x: 0, y: -1}
+  - {x: 1, y: -1}
+  - {x: 0, y: 0}
+  - {x: 0, y: 1}
+  dragAnchor: {x: 0, y: 0}
+  tileSprite: {fileID: 280492920226434507, guid: 47ed600329d85c54583ef51991b88262, type: 3}
+  tileColor: {r: 1, g: 1, b: 1, a: 1}
+  tileMaterial: {fileID: 0}

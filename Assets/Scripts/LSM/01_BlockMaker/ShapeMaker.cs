@@ -53,6 +53,7 @@ public class ShapeMaker : MonoBehaviour
 
     [SerializeField] private Sprite pre_sprite;
     [SerializeField] private Color pre_color;
+    [SerializeField] private Material pre_mat;
 
     #region Getter
     [field:SerializeField]public int SelectNum { get; set; }
@@ -108,6 +109,49 @@ public class ShapeMaker : MonoBehaviour
         }
     }
 
+    // true => Clockwise, false => CounterClockwise
+    public void Rotate_Block(bool b)
+    {
+        bool[] d_cell = slot_cell.ToArray();
+
+
+        for (int i = 0; i < slot_cell.Length; i++) {
+            int x_ = i % w;
+            int y_ = Mathf.FloorToInt(i / w);
+
+            Vector2Int rotate_d_vec = new Vector2Int(x_ - s_x, y_ - s_y);
+            if (b)
+            { rotate_d_vec = new Vector2Int(rotate_d_vec.y, -rotate_d_vec.x); }
+            else
+            { rotate_d_vec = new Vector2Int(-rotate_d_vec.y, rotate_d_vec.x); }
+
+            rotate_d_vec += new Vector2Int(s_x, s_y);
+            d_cell[(rotate_d_vec.y * w) + rotate_d_vec.x] = slot_cell[i];
+        }
+        slot_cell = d_cell.ToArray();
+    }
+
+    // true => TopDown, false => LeftRight
+    public void Reversal_Block(bool b)
+    {
+        bool[] d_cell = slot_cell.ToArray();
+
+        for (int i = 0; i < slot_cell.Length; i++)
+        {
+            int x_ = i % w;
+            int y_ = Mathf.FloorToInt(i / w);
+            Vector2Int rotate_d_vec = new Vector2Int(x_ - s_x, y_ - s_y);
+            if (b)
+            { rotate_d_vec = new Vector2Int(rotate_d_vec.x, -rotate_d_vec.y); }
+            else
+            { rotate_d_vec = new Vector2Int(-rotate_d_vec.x, rotate_d_vec.y); }
+
+            rotate_d_vec += new Vector2Int(s_x,s_y);
+            d_cell[(rotate_d_vec.y * w) + rotate_d_vec.x] = slot_cell[i];
+        }
+        slot_cell = d_cell.ToArray();
+    }
+
     public void Select_Data(int _idx)
     {
         if(_idx < pd_arr.Length)
@@ -124,6 +168,7 @@ public class ShapeMaker : MonoBehaviour
         isOverlap = false;
         isOverwrite = false;
         Setting_Data();
+        CheckSprite(true);
     }
 
 
@@ -173,6 +218,7 @@ public class ShapeMaker : MonoBehaviour
         CreateData(newData);
     }
 
+
     public void CreateData(PieceDefinition d_data)
     {
         string d_name = d_data.pieceId;
@@ -183,21 +229,27 @@ public class ShapeMaker : MonoBehaviour
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
         Debug.Log("<color=green>저장 완료!</color>");
+        isOverwrite = false;
         Get_Files();
         _data = d_data;
     }
 
-    public void CheckSprite()
+    public void CheckSprite(bool reset)
     {
-        if(pre_sprite != _sprite)
+        if(pre_sprite != _sprite || reset)
         {
             PrevImage.sprite = _sprite;
             pre_sprite = _sprite;
         }
-        if (pre_color != _color)
+        if (pre_color != _color || reset)
         {
             PrevImage.color = _color;
             pre_color = _color;
+        }
+        if (pre_mat != _mat || reset)
+        {
+            PrevImage.material = _mat;
+            pre_mat = _mat;
         }
     }
 

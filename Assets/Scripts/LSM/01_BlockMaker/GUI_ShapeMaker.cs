@@ -2,6 +2,7 @@ using System.Linq;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 [CustomEditor(typeof(ShapeMaker))]
 public class GUI_ShapeMaker : Editor
@@ -170,11 +171,34 @@ public class GUI_ShapeMaker : Editor
         EditorGUILayout.PropertyField(_blocks);
         EditorGUI.EndDisabledGroup();
 
+        // 클릭으로 만드는 상자 제작.
         Point_MouseClick();
+        // 회전기능.
+        GUILayout.BeginHorizontal(EditorStyles.helpBox);
+        if (GUILayout.Button("반시계 방향"))
+        { shapeM.Rotate_Block(false); }
+
+        // 반전기능.
+        GUILayout.BeginVertical();
+        if (GUILayout.Button("상하 반전"))
+        { shapeM.Reversal_Block(true); }
+        if (GUILayout.Button("좌우 반전"))
+        { shapeM.Reversal_Block(false); }
+        GUILayout.EndVertical();
+
+        //회전기능
+        if (GUILayout.Button("시계 방향"))
+        { shapeM.Rotate_Block(true); }
+        GUILayout.EndHorizontal();
+        
 
         GUILayout.Space(5);
         GUILayout.Label("원점. 블럭의 중심점.", titleStyle);
         EditorGUILayout.PropertyField(_origin);
+        int d_w = Mathf.FloorToInt(w_.intValue / 2);
+        int d_h = Mathf.FloorToInt(h_.intValue / 2);
+        _origin.vector2IntValue = new Vector2Int( Mathf.Clamp(_origin.vector2IntValue.x,-d_w,d_w), 
+            Mathf.Clamp(_origin.vector2IntValue.y,-d_h, d_h)  );
 
         GUILayout.Space(15);
         GUILayout.Label("브릭의 세부 사항. 스프라이트, 색깔, 재질.", titleStyle);
@@ -182,7 +206,7 @@ public class GUI_ShapeMaker : Editor
         EditorGUILayout.PropertyField(_color);
         EditorGUILayout.PropertyField(_mat);
 
-        shapeM.CheckSprite();
+        shapeM.CheckSprite(false);
     }
 
     private void Point_MouseClick()
