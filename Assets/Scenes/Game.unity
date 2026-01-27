@@ -152,7 +152,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 300, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
+  m_SizeDelta: {x: 200, y: 200}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &85712212
 GameObject:
@@ -745,7 +745,7 @@ GameObject:
   - component: {fileID: 839654908}
   - component: {fileID: 839654907}
   m_Layer: 0
-  m_Name: Text (TMP)
+  m_Name: BestScore
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -790,9 +790,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: '77777
-
-'
+  m_text: 0
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 83d546cb0ed699a41bdd7a4cd34d8fad, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 83d546cb0ed699a41bdd7a4cd34d8fad, type: 2}
@@ -1093,7 +1091,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: -300, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
+  m_SizeDelta: {x: 200, y: 200}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1144576717
 GameObject:
@@ -1232,7 +1230,7 @@ GameObject:
   - component: {fileID: 1630028122}
   - component: {fileID: 1630028121}
   m_Layer: 5
-  m_Name: Text_Score
+  m_Name: CurrenScore
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1659,7 +1657,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
+  m_SizeDelta: {x: 200, y: 200}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &2000549192
 GameObject:
@@ -1714,6 +1712,7 @@ MonoBehaviour:
   horizontalVfxPrefab: {fileID: 7529611460399417499, guid: 37e5d6224e30b43429f8a7bc9bd487a4, type: 3}
   verticalVfxPrefab: {fileID: 543289401653213246, guid: ccaacc22ff092334abae2aef4afec7d0, type: 3}
   vfxParent: {fileID: 1919333675}
+  vfxLayerName: VFX_UI
   destroyPadding: 0.25
 --- !u!1 &2015512182
 GameObject:
@@ -1814,8 +1813,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   scorePerBlockPlaced: 1
-  scorePerLineCleared: 10
-  comboMultiplierStep: 0.25
+  baseLineUnitScore: 10
 --- !u!4 &2053032533
 Transform:
   m_ObjectHideFlags: 0
@@ -1853,6 +1851,17 @@ MonoBehaviour:
   screenToGrid: {fileID: 2053032531}
   piecePool:
   - {fileID: 11400000, guid: 1789077f45759d043a557487e0f88f19, type: 2}
+  - {fileID: 11400000, guid: 7eee15021c6b8914391f7703da2d4faf, type: 2}
+  - {fileID: 11400000, guid: 1a1c8372263f2c144a21580a9fa01c7e, type: 2}
+  - {fileID: 11400000, guid: ba07c65c234c6fe47a1acd4d6f7709e6, type: 2}
+  - {fileID: 11400000, guid: 52b8ea271f38cc34793d40f4b73129ed, type: 2}
+  - {fileID: 11400000, guid: e890541e528ca8b48884f8fcc2b09513, type: 2}
+  - {fileID: 11400000, guid: 9932308975ca53143addeb0704951f26, type: 2}
+  - {fileID: 11400000, guid: 668ca04f19c44284791f753fc5e95d9a, type: 2}
+  - {fileID: 11400000, guid: 99bd2bccf51960044bf33f55462eca3d, type: 2}
+  - {fileID: 11400000, guid: b6bf9dc1c90ce9546aef68b059e27a9a, type: 2}
+  - {fileID: 11400000, guid: 3c028cd1e04284e43a2a6435aae0154d, type: 2}
+  - {fileID: 11400000, guid: b8b4108f988b8f641842c3f047f0dcfb, type: 2}
 --- !u!1 &2073871228
 GameObject:
   m_ObjectHideFlags: 0
@@ -1897,6 +1906,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2129554751}
+  - component: {fileID: 2129554752}
   m_Layer: 5
   m_Name: Score
   m_TagString: Untagged
@@ -1924,6 +1934,21 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: -959.5}
   m_SizeDelta: {x: 1080, y: 1919}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &2129554752
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2129554750}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2dff866ee6ac82b49ab29d206d1a5c76, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  game: {fileID: 2053032532}
+  scoreText: {fileID: 1630028121}
+  bestText: {fileID: 839654907}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

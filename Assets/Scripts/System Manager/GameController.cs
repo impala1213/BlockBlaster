@@ -4,10 +4,12 @@ using UnityEngine;
 
 public sealed class GameController : MonoBehaviour
 {
-    [Header("Scoring")]
+    [Header("Scoring (Block Blast-like)")]
+    [Tooltip("Points per block placed. Keep 1 if you want the classic 'slow but steady' gain.")]
     [SerializeField] private int scorePerBlockPlaced = 1;
-    [SerializeField] private int scorePerLineCleared = 10;
-    [SerializeField] private float comboMultiplierStep = 0.25f;
+
+    [Tooltip("Base unit for line clear scoring. Classic baseline is 10.")]
+    [SerializeField] private int baseLineUnitScore = 10;
 
     private const string BestScoreKey = "BB_BestScore";
 
@@ -15,7 +17,16 @@ public sealed class GameController : MonoBehaviour
 
     public int Score { get; private set; }
     public int BestScore { get; private set; }
+
+    /// <summary>
+    /// Combo index N (0-based):
+    /// - First clear after a miss => N = 0
+    /// - Next consecutive clear => N = 1
+    /// - Next => N = 2 ...
+    /// </summary>
     public int ComboStreak { get; private set; }
+
+    private bool lastTurnHadClear = false;
 
     public struct TurnResult
     {
@@ -33,7 +44,9 @@ public sealed class GameController : MonoBehaviour
     public event Action OnBoardReset;
     public event Action<PieceDefinition, List<Vector2Int>> OnCellsPlaced;
     public event Action<List<Vector2Int>> OnCellsCleared;
-    public event Action<int, int, int, int> OnScoreChanged; // score, best, combo, delta
+
+    // score, best, comboIndex(N), delta
+    public event Action<int, int, int, int> OnScoreChanged;
 
     private void Awake()
     {
@@ -47,6 +60,7 @@ public sealed class GameController : MonoBehaviour
         Board.ClearAll();
         Score = 0;
         ComboStreak = 0;
+        lastTurnHadClear = false;
 
         OnBoardReset?.Invoke();
         OnScoreChanged?.Invoke(Score, BestScore, ComboStreak, 0);
@@ -99,7 +113,7 @@ public sealed class GameController : MonoBehaviour
         int linesCleared = fullRows.Count + fullCols.Count;
         result.linesCleared = linesCleared;
 
-        // 3) Clear lines (unique cells)
+        // 3) Clear lines
         List<Vector2Int> cleared = null;
         if (linesCleared > 0)
         {
@@ -108,7 +122,7 @@ public sealed class GameController : MonoBehaviour
             OnCellsCleared?.Invoke(cleared);
         }
 
-        // 4) Scoring
+        // 4) Scoring (Block Blast-like)
         int delta = ApplyScore(placed.Count, linesCleared);
         result.scoreDelta = delta;
 
@@ -187,20 +201,32 @@ public sealed class GameController : MonoBehaviour
         return cleared;
     }
 
+    /// <summary>
+    /// Score = placedBlocks*scorePerBlockPlaced + (BaseClear(lines) * (comboIndex+1))
+    /// comboIndex:
+    /// - first clear after a miss => 0
+    /// - consecutive clears => 1,2,3...
+    /// </summary>
     private int ApplyScore(int placedBlocksCount, int linesClearedCount)
     {
-        int placeScore = placedBlocksCount * scorePerBlockPlaced;
+        int placeScore = placedBlocksCount * Mathf.Max(0, scorePerBlockPlaced);
 
         int lineScore = 0;
         if (linesClearedCount > 0)
         {
-            ComboStreak++;
-            float mult = 1f + (ComboStreak * comboMultiplierStep);
-            lineScore = Mathf.RoundToInt(linesClearedCount * scorePerLineCleared * mult);
+            if (lastTurnHadClear) ComboStreak++;
+            else ComboStreak = 0;
+
+            lastTurnHadClear = true;
+
+            int baseClear = GetBaseClearScore(linesClearedCount);
+            lineScore = baseClear * (ComboStreak + 1);
         }
         else
         {
+            // miss resets combo chain
             ComboStreak = 0;
+            lastTurnHadClear = false;
         }
 
         int delta = placeScore + lineScore;
@@ -214,5 +240,23 @@ public sealed class GameController : MonoBehaviour
         }
 
         return delta;
+    }
+
+
+    /// 10
+    /// 20
+    /// 60
+    /// 120
+    /// 200
+    /// 300
+
+    private int GetBaseClearScore(int lines)
+    {
+        int unit = Mathf.Max(1, baseLineUnitScore);
+
+        if (lines <= 0) return 0;
+        if (lines == 1) return unit;
+
+        return unit * lines * (lines - 1);
     }
 }
