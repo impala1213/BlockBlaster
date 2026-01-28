@@ -89,7 +89,8 @@ namespace LSM
         public static int Get_AchievementLevel(E_Achievements_Code _code)
         { return AchievementsManager.Achievement_Event_Get(_code).CurLevel; }
 
-
+        public static int Get_AchievementRequireLevel(E_Achievements_Code _code)
+        { return AchievementsManager.Achievement_Event_LevelRequireScore(_code); }
     }
 
 }
