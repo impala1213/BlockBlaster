@@ -22,7 +22,7 @@ public class C_PieceClass
 public class ShapeMaker : MonoBehaviour
 {
     string _path = "Assets/PieceDefinition";
-    string default_img_path = "Assets/Z_Other_LSM/Block_One.png";
+    string default_img_path = "Assets/Art/Game/Block_One.png";
 
     private Sprite default_png;
     [SerializeField] private C_PieceClass[] pd_arr;

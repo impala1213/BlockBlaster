@@ -19,6 +19,6 @@ MonoBehaviour:
   - {x: -1, y: 0}
   - {x: 0, y: 0}
   dragAnchor: {x: 0, y: 0}
-  tileSprite: {fileID: 280492920226434507, guid: 47ed600329d85c54583ef51991b88262, type: 3}
+  tileSprite: {fileID: 21300000, guid: 4b8ae6a5b0cd11644976f19532c10da9, type: 3}
   tileColor: {r: 1, g: 1, b: 1, a: 1}
   tileMaterial: {fileID: 0}
