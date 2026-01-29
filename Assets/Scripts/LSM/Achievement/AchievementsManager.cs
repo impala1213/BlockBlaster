@@ -151,7 +151,8 @@ namespace LSM {
         public int Get_AchievementLevelRequire(E_Achievements_Code _code)
         {
             C_Achievements d_class = Get_Achievement(_code);
-            return d_class.CurLevel * d_class.data._invert;
+            //return d_class.CurLevel * d_class.data._invert;
+            return d_class.data._invert;
         }
     }
 }

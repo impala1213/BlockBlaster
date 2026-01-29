@@ -91,6 +91,12 @@ namespace LSM
 
         public static int Get_AchievementRequireLevel(E_Achievements_Code _code)
         { return AchievementsManager.Achievement_Event_LevelRequireScore(_code); }
+
+        public static int Get_AchievementCurrentScore(E_Achievements_Code _code)
+        {
+            int result = Get_AchievementValue(_code) - (Get_AchievementRequireLevel(_code) * Get_AchievementLevel(_code));
+            return result;
+                }
     }
 
 }
