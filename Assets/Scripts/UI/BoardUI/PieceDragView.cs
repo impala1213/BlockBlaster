@@ -250,7 +250,25 @@ public sealed class PieceDragView : MonoBehaviour, IBeginDragHandler, IDragHandl
         if (IsReadyForDrag() && screenToGrid.TryGetGridPos(eventData.position, out var hover))
         {
             Vector2Int origin = hover - piece.dragAnchor;
-            placed = game.TryPlace(piece, origin).success;
+            var result = game.TryPlace(piece, origin);
+            placed = result.success;
+
+            if (AudioManager.Instance != null)
+            {
+                if (result.success)
+                {
+                    AudioManager.Instance.PlaySFX(AudioManager.SfxType.Click);
+
+                    if (result.linesCleared > 0)
+                    {
+                        AudioManager.Instance.PlaySFX(AudioManager.SfxType.Success);
+                    }
+                }
+                else
+                {
+                    AudioManager.Instance.PlaySFX(AudioManager.SfxType.Fail);
+                }
+            }
         }
 
         isDragging = false;
