@@ -29,7 +29,9 @@ namespace LSM
         /// <param name="_code">LSM.E_Achievements_Code</param>
         /// <param name="_action">매개변수로 int값을 받는 함수. 변화 후의 레벨의 값이 들어감.</param>
         public static void Add_LevelChange(E_Achievements_Code _code, Action<int> _action)
-        { AchievementsManager.Achievement_Event_LevelChange(_code, _action, true); }
+        {
+            AchievementsManager.Achievement_Event_LevelChange(_code, _action, true);
+        }
         /// <summary>
         /// _code에 맞는 업적의 '레벨'이 변화할때 실행되는 델리게이트 제거 함수.
         /// </summary>

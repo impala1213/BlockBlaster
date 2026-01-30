@@ -82,7 +82,7 @@ namespace LSM {
             a_Set_Achievement = Add_Achievement;
             a_add_levelchange = Add_LevelChange;
 
-            
+            DontDestroyOnLoad(this.gameObject);
         }
 
         private void Init_()
