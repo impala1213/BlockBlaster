@@ -77,6 +77,7 @@ namespace LSM
             Init_();
             Init_Delegate();
             Init_SoundClip();
+            DontDestroyOnLoad(this.gameObject);
         }
 
         private void Start()

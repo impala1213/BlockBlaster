@@ -33,7 +33,7 @@ public class Achievement_Slot : MonoBehaviour, LSM.I_Observer
     {
         baseSize = new Vector2(fill_background.rect.width, fill_background.rect.height);
         //cur_img.rectTransform.sizeDelta = new Vector2(fill_background.rect.width * 0.5f, fill_background.rect.height);
-        Setting_(E_Achievements_Code.ClearBlock);
+        //Setting_(E_Achievements_Code.ClearBlock);
 
         
     }
@@ -88,7 +88,7 @@ public class Achievement_Slot : MonoBehaviour, LSM.I_Observer
             int require_v = Linker_Achievement.Get_AchievementRequireLevel(ac_code);
             value_txt.text = $"{pre_v} / {require_v}";
             float level_rate = (float)pre_v / (float)require_v;
-            cur_img.rectTransform.sizeDelta = new Vector2(baseSize.x * level_rate, baseSize.y);
+            cur_img.rectTransform.sizeDelta = new Vector2(Mathf.Max(20,baseSize.x * level_rate), baseSize.y);
             yield return new WaitForSeconds(0.05f);
         }
     }
