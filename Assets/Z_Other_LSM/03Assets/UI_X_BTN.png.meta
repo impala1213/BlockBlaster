@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 36fb43420df74b04c8cc104bb49599eb
+guid: 178f9c0871d41d3409f0473d8e31147c
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 6870404592291994381
-    second: UI_TAB_BTN_0
+      213: 5604167103288489304
+    second: UI_X_BTN_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -52,7 +52,7 @@ TextureImporter:
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
   spritePixelsToUnits: 100
-  spriteBorder: {x: 20, y: 0, z: 20, w: 0}
+  spriteBorder: {x: 20, y: 20, z: 20, w: 20}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
   alphaIsTransparency: 1
@@ -126,13 +126,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: UI_TAB_BTN_0
+      name: UI_X_BTN_0
       rect:
         serializedVersion: 2
         x: 1
         y: 1
-        width: 216
-        height: 133
+        width: 122
+        height: 141
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -141,8 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: d0bd6c26394985f50800000000000000
-      internalID: 6870404592291994381
+      spriteID: 855b07dc94006cd40800000000000000
+      internalID: 5604167103288489304
       vertices: []
       indices: 
       edges: []
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      UI_TAB_BTN_0: 6870404592291994381
+      UI_X_BTN_0: 5604167103288489304
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
