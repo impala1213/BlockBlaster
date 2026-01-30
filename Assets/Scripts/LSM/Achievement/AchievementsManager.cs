@@ -37,6 +37,10 @@ namespace LSM {
         private delegate int d_getLength();
         private static event d_getLength D_GetLength;
 
+        private delegate int d_getRequire(E_Achievements_Code _code);
+        private static event d_getRequire D_GetRequire;
+
+
         #endregion
 
         #region ---------- Observer. UI와 연결할 것.
@@ -73,6 +77,8 @@ namespace LSM {
             a_unsubscribe = UnSubscribe;
             D_Get = Get_Achievement;
             D_GetLength = ()=>System.Enum.GetValues(typeof(E_Achievements_Code)).Length;
+            D_GetRequire = Get_AchievementLevelRequire;
+
             a_Set_Achievement = Add_Achievement;
             a_add_levelchange = Add_LevelChange;
 
@@ -113,6 +119,8 @@ namespace LSM {
         { return D_GetLength.Invoke(); }
         public static void Achievement_Event_LevelChange(E_Achievements_Code _code, Action<int> d_action, bool b)
         {a_add_levelchange(_code, d_action, b); }
+        public static int Achievement_Event_LevelRequireScore(E_Achievements_Code _code)
+        { return D_GetRequire.Invoke(_code); }
         
         #endregion
 
@@ -140,5 +148,11 @@ namespace LSM {
             { dict_acheivement[_mod].Remove_LevelChange(d_action); }
         }
 
+        public int Get_AchievementLevelRequire(E_Achievements_Code _code)
+        {
+            C_Achievements d_class = Get_Achievement(_code);
+            //return d_class.CurLevel * d_class.data._invert;
+            return d_class.data._invert;
+        }
     }
 }

@@ -79,7 +79,7 @@ public sealed class PieceDragView : MonoBehaviour, IBeginDragHandler, IDragHandl
         UnsubscribeGridEvents();
     }
 
-    private void AutoFillRefsIfMissing() // ÀÎ½ºÆåÅÍ ¹ÌÇÒ´ç½Ã ÀÚµ¿À¸·Î º¸Ãæ
+    private void AutoFillRefsIfMissing() // ??????? ?????? ??????? ????
     {
         if (rootCanvas == null) rootCanvas = GetComponentInParent<Canvas>();
         uiCamera = (rootCanvas != null && rootCanvas.renderMode != RenderMode.ScreenSpaceOverlay) ? rootCanvas.worldCamera : null;
@@ -90,7 +90,7 @@ public sealed class PieceDragView : MonoBehaviour, IBeginDragHandler, IDragHandl
             dragLayer = rootCanvas.transform as RectTransform;
     }
 
-    private void SubscribeGridEvents() // ¼¿ Å©±â º¯È­½Ã ´ëÀÀ¿ë
+    private void SubscribeGridEvents() // ?? ??? ????? ??????
     {
         if (screenToGrid == null) return;
 
@@ -107,7 +107,7 @@ public sealed class PieceDragView : MonoBehaviour, IBeginDragHandler, IDragHandl
         screenToGrid.OnRecalculated -= HandleGridRecalculated;
     }
 
-    private void EnsureRaycastTargetOnRoot() // µå·¡±× ½ÃÀÛ Á¶°Ç º¸Àå¿ë
+    private void EnsureRaycastTargetOnRoot() // ???? ???? ???? ?????
     {
         var img = GetComponent<Image>();
         if (img == null) img = gameObject.AddComponent<Image>();
@@ -123,7 +123,7 @@ public sealed class PieceDragView : MonoBehaviour, IBeginDragHandler, IDragHandl
         rect.pivot = new Vector2(0.5f, 0.5f);
     }
 
-    private void TryAutoDetectHomeSlot() // ¼ÕÆÐ Slot Å½Áö¿ë 
+    private void TryAutoDetectHomeSlot() // ???? Slot ????? 
     {
         if (homeSlot != null) return;
         if (dragLayer != null && transform.parent == dragLayer) return;
@@ -136,7 +136,7 @@ public sealed class PieceDragView : MonoBehaviour, IBeginDragHandler, IDragHandl
     }
 
 
-    // ´Ù¸¥ ÆÄÀÏ ÂüÁ¶¿ë 
+    // ??? ???? ?????? 
     public void Initialize(GameController gameRef, ScreenToGrid gridRef, Canvas canvasRef, RectTransform dragLayerRef, RectTransform homeSlotRef)
     {
         if (gameRef != null) game = gameRef;
@@ -181,7 +181,7 @@ public sealed class PieceDragView : MonoBehaviour, IBeginDragHandler, IDragHandl
         ApplyHandLayoutInSlot(force: true);
     }
 
-    public void OnBeginDrag(PointerEventData eventData) // µå·¡±× ½ÃÀÛ ÀÌº¥Æ® 
+    public void OnBeginDrag(PointerEventData eventData) // ???? ???? ???? 
     {
         if (!IsReadyForDrag())
             return;
@@ -193,7 +193,7 @@ public sealed class PieceDragView : MonoBehaviour, IBeginDragHandler, IDragHandl
 
         preDragParent = transform.parent;
 
-        // µå·¡±× ³¡³ª°í ¹èÄ¡ ¾ÈÇÒ½Ã ¿ø·¡ À§Ä¡·Î º¹±Í
+        // ???? ?????? ??? ????? ???? ????? ????
         if (dragLayer != null && transform.parent != dragLayer)
             rect.SetParent(dragLayer, true);
 
@@ -201,19 +201,19 @@ public sealed class PieceDragView : MonoBehaviour, IBeginDragHandler, IDragHandl
 
         ApplyBoardLayout(force: true);
 
-        // ÀâÀº À§Ä¡°¡ À¯ÁöµÇ°Ô
+        // ???? ????? ???????
         RectTransformUtility.ScreenPointToLocalPointInRectangle(dragLayer, eventData.position, uiCamera, out var pointerLocal);
         grabOffset = rect.anchoredPosition - pointerLocal;
     }
 
-    public void OnDrag(PointerEventData eventData) // µå·¡±×Áß ÀÌµ¿, ¹Ì¸®º¸±â, ¹èÄ¡ °¡´ÉÇÑÁö »ö»ó Ç¥½Ã
+    public void OnDrag(PointerEventData eventData) // ?????? ???, ???????, ??? ???????? ???? ???
     {
         if (!isDragging || !IsReadyForDrag())
             return;
 
         RectTransformUtility.ScreenPointToLocalPointInRectangle(dragLayer, eventData.position, uiCamera, out var pointerLocal);
 
-        if (screenToGrid.TryGetGridPos(eventData.position, out var hover)) // º¸µå À§ÀÏ½Ã ¼¿ ±â¹ÝÀ¸·Î ÀÌµ¿ ¾Æ´Ï¸é ÀÚÀ¯·Ó°Ô ÀÌµ¿
+        if (screenToGrid.TryGetGridPos(eventData.position, out var hover)) // ???? ????? ?? ??????? ??? ???? ??????? ???
         {
             if (snapOnBoard && screenToGrid.GridCenterToDragLayerLocal(hover, dragLayer, out var snapLocal))
                 rect.anchoredPosition = snapLocal;
@@ -238,7 +238,7 @@ public sealed class PieceDragView : MonoBehaviour, IBeginDragHandler, IDragHandl
         }
     }
 
-    public void OnEndDrag(PointerEventData eventData) // µå·¡±× Á¾·á½Ã Ã³¸® ¹èÄ¡ or ½½·ÔÀ¸·Î º¹±Í
+    public void OnEndDrag(PointerEventData eventData) // ???? ????? ó?? ??? or ???????? ????
     {
         if (canvasGroup != null) canvasGroup.blocksRaycasts = true;
 
@@ -250,7 +250,41 @@ public sealed class PieceDragView : MonoBehaviour, IBeginDragHandler, IDragHandl
         if (IsReadyForDrag() && screenToGrid.TryGetGridPos(eventData.position, out var hover))
         {
             Vector2Int origin = hover - piece.dragAnchor;
-            placed = game.TryPlace(piece, origin).success;
+            var result = game.TryPlace(piece, origin);
+            placed = result.success;
+
+            if (result.success)
+            {
+                if (AudioManager.Instance != null)
+                {
+                    AudioManager.Instance.PlaySFX(AudioManager.SfxType.Click);
+                }
+
+                if (result.linesCleared > 0)
+                {
+                    if (AudioManager.Instance != null)
+                    {
+                        AudioManager.Instance.PlaySFX(AudioManager.SfxType.Success);
+                    }
+
+                    if (VibrationManager.Instance != null)
+                    {
+                        VibrationManager.Instance.VibrateShort();
+                    }
+                }
+            }
+            else
+            {
+                if (AudioManager.Instance != null)
+                {
+                    AudioManager.Instance.PlaySFX(AudioManager.SfxType.Fail);
+                }
+
+                if (VibrationManager.Instance != null)
+                {
+                    VibrationManager.Instance.VibrateShort();
+                }
+            }
         }
 
         isDragging = false;
@@ -273,7 +307,7 @@ public sealed class PieceDragView : MonoBehaviour, IBeginDragHandler, IDragHandl
             OnPlaced?.Invoke(this);
     }
 
-    private bool IsReadyForDrag() // µå·¡±× °¡´ÉÇÑÁö Ã¼Å© Á¶°Çµé.
+    private bool IsReadyForDrag() // ???? ???????? ü? ?????.
     {
         return piece != null &&
                piece.IsValid() &&
@@ -286,7 +320,7 @@ public sealed class PieceDragView : MonoBehaviour, IBeginDragHandler, IDragHandl
                screenToGrid.CellSize.y > 0f;
     }
 
-    private void HandleGridRecalculated() // cellsize °è»ê
+    private void HandleGridRecalculated() // cellsize ???
     {
         if (screenToGrid == null) return;
 
@@ -471,7 +505,7 @@ public sealed class PieceDragView : MonoBehaviour, IBeginDragHandler, IDragHandl
         }
     }
 
-    private void ApplyTintFactor(Color factor) // ¹èÄ¡ °¡´É½Ã ÃÊ·Ï ºÒ°¡´É½Ã »¡°­
+    private void ApplyTintFactor(Color factor) // ??? ????? ??? ?????? ????
     {
         if (blocks == null) return;
 
@@ -484,7 +518,7 @@ public sealed class PieceDragView : MonoBehaviour, IBeginDragHandler, IDragHandl
         }
     }
 
-    private void ResolvePreviewLayer() 
+    private void ResolvePreviewLayer()
     {
         if (previewLayer != null) return;
 
@@ -512,7 +546,7 @@ public sealed class PieceDragView : MonoBehaviour, IBeginDragHandler, IDragHandl
         }
     }
 
-    private void EnsurePreviewBlocks() // block¿¡ ¸ÂÃç ¹Ì¸®º¸±â block »ý¼º
+    private void EnsurePreviewBlocks() // block?? ???? ??????? block ????
     {
         if (piece == null || !piece.IsValid()) return;
 
@@ -558,7 +592,7 @@ public sealed class PieceDragView : MonoBehaviour, IBeginDragHandler, IDragHandl
         }
     }
 
-    private void UpdatePreview(Vector2Int origin, bool canPlace) // ÀÌµ¿½Ã¸¶´Ù ¹Ì¸®º¸±â Å¸ÀÏ Ç¥½Ã
+    private void UpdatePreview(Vector2Int origin, bool canPlace) // ????ø??? ??????? ??? ???
     {
         EnsurePreviewBlocks();
         if (previewBlocks == null || screenToGrid == null || previewLayer == null) return;
