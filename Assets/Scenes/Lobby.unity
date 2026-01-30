@@ -696,7 +696,11 @@ MonoBehaviour:
   bgmVolume: 0.7
   sfxVolume: 1
   defaultBgm: {fileID: 8300000, guid: fc8dbd8e5e5ec4ce1983220f33ade433, type: 3}
-  defaultSfxClips: []
+  defaultSfxClips:
+  - {fileID: 8300000, guid: 28c2e7303fc8605c9bb66371a22c1607, type: 3}
+  - {fileID: 8300000, guid: 4b76df7448ad637b48ff64660243907b, type: 3}
+  - {fileID: 8300000, guid: b9bfb56d2cc92cb56b9040e1af715ab4, type: 3}
+  - {fileID: 8300000, guid: 75b39da30dad119499523a6155d6deb1, type: 3}
 --- !u!4 &529637119
 Transform:
   m_ObjectHideFlags: 0
