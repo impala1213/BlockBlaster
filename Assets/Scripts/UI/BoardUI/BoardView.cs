@@ -76,6 +76,15 @@ public sealed class BoardView : MonoBehaviour
         active.Clear();
     }
 
+    /// <summary>
+    /// 외부(게임오버 등)에서 보드에 배치된 타일 비주얼을 강제로 지울 때 사용합니다.
+    /// 점수/게임 상태는 건드리지 않고 타일 렌더링만 비웁니다.
+    /// </summary>
+    public void ClearAllVisuals()
+    {
+        ClearAll();
+    }
+
     private TileView GetTile()
     {
         if (tilePrefab == null) return null;

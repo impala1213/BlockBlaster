@@ -79,6 +79,29 @@ public sealed class GameController : MonoBehaviour
         return true;
     }
 
+    /// <summary>
+    /// Returns true if the given piece can be placed anywhere on the current board.
+    /// (Used for game-over detection: when no hand pieces fit, the game ends.)
+    /// </summary>
+    public bool CanPlaceAnywhere(PieceDefinition piece)
+    {
+        if (piece == null || !piece.IsValid()) return false;
+
+        // Iterate every cell as the potential drag-anchor position.
+        for (int y = 0; y < Board.GridHeight; y++)
+        {
+            for (int x = 0; x < Board.GridWidth; x++)
+            {
+                Vector2Int anchorCell = new Vector2Int(x, y);
+                Vector2Int origin = anchorCell - piece.dragAnchor;
+                if (CanPlace(piece, origin))
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
     public TurnResult TryPlace(PieceDefinition piece, Vector2Int origin)
     {
         var result = new TurnResult
