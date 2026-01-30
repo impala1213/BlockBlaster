@@ -4,6 +4,14 @@ public class AudioManager : MonoBehaviour
 {
     public static AudioManager Instance { get; private set; }
 
+    public enum SfxType
+    {
+        Click = 0,
+        Success = 1,
+        Fail = 2,
+        GameEnd = 3
+    }
+
     [Header("Audio Sources")]
     [SerializeField] private AudioSource bgmSource;
     [SerializeField] private AudioSource sfxSource;
@@ -14,7 +22,12 @@ public class AudioManager : MonoBehaviour
 
     [Header("Default Clips")]
     [SerializeField] private AudioClip defaultBgm;
-    [SerializeField] private AudioClip[] defaultSfxClips;
+
+    [Header("SFX Clips")]
+    [SerializeField] private AudioClip clickSfx;
+    [SerializeField] private AudioClip successSfx;
+    [SerializeField] private AudioClip failSfx;
+    [SerializeField] private AudioClip gameEndSfx;
 
     private bool isBGMEnabled = true;
     private bool isSFXEnabled = true;
@@ -118,6 +131,18 @@ public class AudioManager : MonoBehaviour
         }
     }
 
+    public void PlaySFX(SfxType type)
+    {
+        AudioClip clip = GetSfxClip(type);
+        if (clip == null)
+        {
+            Debug.LogWarning($"AudioManager: SFX clip is missing for {type}");
+            return;
+        }
+
+        PlaySFX(clip);
+    }
+
     public void SetBGMEnabled(bool enabled)
     {
         isBGMEnabled = enabled;
@@ -160,6 +185,23 @@ public class AudioManager : MonoBehaviour
     private void UpdateSFXState()
     {
         // SFX는 즉시 반영됨 (PlayOneShot에서 isSFXEnabled 체크)
+    }
+
+    private AudioClip GetSfxClip(SfxType type)
+    {
+        switch (type)
+        {
+            case SfxType.Click:
+                return clickSfx;
+            case SfxType.Success:
+                return successSfx;
+            case SfxType.Fail:
+                return failSfx;
+            case SfxType.GameEnd:
+                return gameEndSfx;
+            default:
+                return null;
+        }
     }
 
     public void SetBGMVolume(float volume)
