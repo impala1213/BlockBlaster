@@ -18,6 +18,8 @@ public class SceneLoader : MonoBehaviour
     [SerializeField] private string lobbySceneName = "Lobby";
     [SerializeField] private string gameSceneName = "Game";
 
+    [SerializeField] private string creditsSceneName = "Credits";
+
     [Header("Fade Settings")]
     [SerializeField] private float fadeDuration = 0.5f;
     [SerializeField] private Color fadeColor = Color.black;
@@ -162,6 +164,13 @@ public class SceneLoader : MonoBehaviour
         {
             currentGameMode = mode;
             StartCoroutine(LoadSceneWithFade(gameSceneName));
+        }
+    }
+    public void LoadCreditsScene()
+    {
+        if (!isLoading)
+        {
+            StartCoroutine(LoadSceneWithFade(creditsSceneName));
         }
     }
 
