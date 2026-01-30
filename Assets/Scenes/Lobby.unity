@@ -672,7 +672,6 @@ GameObject:
   m_Component:
   - component: {fileID: 529637119}
   - component: {fileID: 529637118}
-  - component: {fileID: 529637120}
   m_Layer: 0
   m_Name: AudioManagerObj
   m_TagString: Untagged
@@ -696,11 +695,8 @@ MonoBehaviour:
   sfxSource: {fileID: 0}
   bgmVolume: 0.7
   sfxVolume: 1
-  defaultBgm: {fileID: 8300000, guid: fc8dbd8e5e5ec4ce1983220f33ade433, type: 3}
-  clickSfx: {fileID: 8300000, guid: 28c2e7303fc8605c9bb66371a22c1607, type: 3}
-  successSfx: {fileID: 8300000, guid: 4b76df7448ad637b48ff64660243907b, type: 3}
-  failSfx: {fileID: 8300000, guid: b9bfb56d2cc92cb56b9040e1af715ab4, type: 3}
-  gameEndSfx: {fileID: 8300000, guid: 75b39da30dad119499523a6155d6deb1, type: 3}
+  defaultBgm: {fileID: 8300000, guid: cecf2b575615a484ca6f13ba9d192dfd, type: 3}
+  defaultSfxClips: []
 --- !u!4 &529637119
 Transform:
   m_ObjectHideFlags: 0
@@ -716,18 +712,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &529637120
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 529637117}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 59678767525d242768f09653e6ce5d56, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &627094675
 GameObject:
   m_ObjectHideFlags: 0

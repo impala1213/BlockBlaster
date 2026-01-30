@@ -34,6 +34,9 @@ public sealed class PieceDragView : MonoBehaviour, IBeginDragHandler, IDragHandl
 
     public event Action<PieceDragView> OnPlaced;
 
+    public PieceDefinition CurrentPiece => piece;
+
+
     public bool IsDragging => isDragging;
 
     private RectTransform rect;
