@@ -25,6 +25,8 @@ public class GameScene_UI : MonoBehaviour
     private string lobbySceneName = "Lobby";
 
     IEnumerator ie_ui;
+    bool ieEnableCoroutine = false;
+    bool isEnableCoroutine_doubleCheck = false;
 
     private void Awake()
     {
@@ -53,10 +55,13 @@ public class GameScene_UI : MonoBehaviour
         dc_yap.onClick.AddListener(() => SceneManager.LoadScene(lobbySceneName));
 
         isEnable = false;
+        ieEnableCoroutine = false;
+        isEnableCoroutine_doubleCheck = false;
     }
 
     public void Ui_Enable(bool  b)
     {
+        if (ieEnableCoroutine) { return; }
         if (ie_ui != null) { StopCoroutine(ie_ui); }
         ie_ui = IE_UIEnable(b);
         StartCoroutine(ie_ui);
@@ -64,6 +69,7 @@ public class GameScene_UI : MonoBehaviour
 
     IEnumerator IE_UIEnable(bool b)
     {
+        ieEnableCoroutine = true;
         settingObj.SetActive(true);
         float start_t = b ? 0 : 1;
         float dest_t = b ? 1 : 0;
@@ -83,10 +89,14 @@ public class GameScene_UI : MonoBehaviour
         setting_group.alpha = b?1:0;
 
         settingObj.SetActive(b);
+        ieEnableCoroutine = false;
     }
 
     IEnumerator IE_DC_Enable()
     {
+        if (isEnableCoroutine_doubleCheck) { yield break; }
+
+        isEnableCoroutine_doubleCheck = true;
         doubleCheckUi.SetActive(true);
         float start_t = 0 ;
         float dest_t = 1;
@@ -104,6 +114,6 @@ public class GameScene_UI : MonoBehaviour
             yield return null;
         }
         doubleCheckUi.transform.localScale = new Vector3(1f, 1f, 1f);
-
+        isEnableCoroutine_doubleCheck = false;
     }
 }
